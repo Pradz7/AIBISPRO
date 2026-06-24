@@ -6,25 +6,48 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
-import { ProductsService } from './products.service';
 
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+
+import { ProductsService } from './products.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+
+@ApiTags('Products')
 @Controller('products')
 export class ProductsController {
   constructor(
     private readonly productsService: ProductsService,
   ) {}
 
+  @ApiOperation({
+    summary: 'Get all products',
+  })
   @Get()
   findAll() {
     return this.productsService.findAll();
   }
 
+  @ApiOperation({
+    summary: 'Get product by ID',
+  })
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.productsService.findOne(BigInt(id));
+    return this.productsService.findOne(
+      BigInt(id),
+    );
   }
 
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Create product',
+  })
+  @UseGuards(JwtAuthGuard)
   @Post()
   create(
     @Body()
@@ -37,6 +60,11 @@ export class ProductsController {
     return this.productsService.create(body);
   }
 
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Update product',
+  })
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -52,6 +80,11 @@ export class ProductsController {
     );
   }
 
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Delete product',
+  })
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productsService.remove(

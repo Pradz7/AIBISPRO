@@ -1,16 +1,40 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
-async function bootstrap() {
-  (BigInt.prototype as any).toJSON = function () {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
-    return this.toString();
-  };
+import {
+  SwaggerModule,
+  DocumentBuilder,
+} from '@nestjs/swagger';
 
+async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  await app.listen(process.env.PORT ?? 3000);
+  const config = new DocumentBuilder()
+    .setTitle('AIBISPRO API')
+    .setDescription(
+      'Business Intelligence System API',
+    )
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+
+  const document =
+    SwaggerModule.createDocument(
+      app,
+      config,
+    );
+
+  SwaggerModule.setup(
+    'api',
+    app,
+    document,
+  );
+
+  await app.listen(3000);
+
+  console.log(
+    'Swagger: http://localhost:3000/api',
+  );
 }
 
 bootstrap();

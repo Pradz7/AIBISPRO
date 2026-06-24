@@ -6,8 +6,15 @@ import {
   DocumentBuilder,
 } from '@nestjs/swagger';
 
+(BigInt.prototype as any).toJSON =
+  function () {
+    return this.toString();
+  };
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(
+    AppModule,
+  );
 
   const config = new DocumentBuilder()
     .setTitle('AIBISPRO API')

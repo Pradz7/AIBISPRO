@@ -15,93 +15,98 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { ProductsService } from './products.service';
+import { PromotionsService } from './promotions.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 
-@ApiTags('Products')
-@Controller('products')
-export class ProductsController {
+@ApiTags('Promotions')
+@Controller('promotions')
+export class PromotionsController {
   constructor(
-    private readonly productsService: ProductsService,
+    private readonly promotionsService: PromotionsService,
   ) {}
 
   @ApiOperation({
-    summary: 'Get all products',
+    summary: 'Get all promotions',
   })
   @Get()
   findAll() {
-    return this.productsService.findAll();
+    return this.promotionsService.findAll();
   }
 
   @ApiOperation({
-    summary: 'Get product by ID',
+    summary: 'Get promotion by ID',
   })
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.productsService.findOne(
+    return this.promotionsService.findOne(
       BigInt(id),
     );
   }
 
   @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Create product',
-  })
   @Roles('admin')
   @UseGuards(
     JwtAuthGuard,
     RolesGuard,
   )
+  @ApiOperation({
+    summary: 'Create promotion',
+  })
   @Post()
   create(
     @Body()
     body: {
-      name: string;
+      title: string;
       description?: string;
-      category_id?: string;
+      discount_percent?: number;
+      start_date?: string;
+      end_date?: string;
+      status?: string;
     },
   ) {
-    return this.productsService.create(body);
+    return this.promotionsService.create(body);
   }
 
   @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Update product',
-  })
   @Roles('admin')
   @UseGuards(
     JwtAuthGuard,
     RolesGuard,
   )
+  @ApiOperation({
+    summary: 'Update promotion',
+  })
   @Patch(':id')
   update(
     @Param('id') id: string,
     @Body()
     body: {
-      name?: string;
+      title?: string;
       description?: string;
+      discount_percent?: number;
+      status?: string;
     },
   ) {
-    return this.productsService.update(
+    return this.promotionsService.update(
       BigInt(id),
       body,
     );
   }
 
   @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Delete product',
-  })
   @Roles('admin')
   @UseGuards(
     JwtAuthGuard,
     RolesGuard,
   )
+  @ApiOperation({
+    summary: 'Delete promotion',
+  })
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.productsService.remove(
+    return this.promotionsService.remove(
       BigInt(id),
     );
   }

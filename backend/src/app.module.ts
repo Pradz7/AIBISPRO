@@ -10,9 +10,10 @@ import { SalesModule } from './sales/sales.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { AuthModule } from './auth/auth.module';
 import { PromotionsModule } from './promotions/promotions.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [PrismaModule, DashboardModule, ProductsModule, CategoriesModule, AnalyticsModule, SalesModule, InventoryModule, AuthModule, PromotionsModule],
+  imports: [PrismaModule, DashboardModule, ProductsModule, CategoriesModule, AnalyticsModule, SalesModule, InventoryModule, AuthModule, PromotionsModule, UsersModule],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -6,6 +6,7 @@ import {
   UploadedFile,
   Req,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 
 import {
@@ -73,22 +74,34 @@ export class UploadController {
       );
     }
 
-    const dataset =
-      await this.uploadService.createDataset(
-        file.originalname,
-        BigInt(req.user.id),
-      );
+    try {
+      const dataset =
+        await this.uploadService.createDataset(
+          file.originalname,
+          BigInt(req.user.id),
+        );
 
-    const rows =
-      await this.uploadService.parseCsv(
-        file.path,
-      );
+      const rows =
+        await this.uploadService.parseCsv(
+          file.path,
+        );
 
-    return {
-      message: 'Dataset uploaded successfully',
-      dataset,
-      totalRows: rows.length,
-      preview: rows,
-    };
+      const result =
+        await this.uploadService.importSales(
+          rows,
+        );
+
+      return {
+        message: 'Sales imported successfully',
+        dataset,
+        totalRows: rows.length,
+        imported: result.imported.length,
+        failed: result.failed,
+      };
+    } catch (error: any) {
+      throw new InternalServerErrorException(
+        error.message,
+      );
+    }
   }
 }

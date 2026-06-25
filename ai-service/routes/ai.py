@@ -22,17 +22,20 @@ router = APIRouter(prefix="/ai", tags=["AI"])
 logger = logging.getLogger("ai-service")
 
 
-# ---------------------------
-# HEALTH
-# ---------------------------
+# =========================================================
+# HEALTH CHECK
+# =========================================================
 @router.get("/health")
 def health():
-    return success({"status": "running"})
+    return success({
+        "status": "running",
+        "service": "ai-service"
+    })
 
 
-# ---------------------------
-# SALES
-# ---------------------------
+# =========================================================
+# SALES DATA
+# =========================================================
 @router.get("/sales")
 def sales():
     try:
@@ -46,116 +49,128 @@ def sales():
 
     except Exception as e:
         logger.exception("Sales endpoint failed")
-        return error("Failed to load sales data", e)
+        return error("Failed to load sales data", str(e))
 
 
-# ---------------------------
+# =========================================================
 # DASHBOARD
-# ---------------------------
+# =========================================================
 @router.get("/dashboard")
 def dashboard():
     try:
         return success(dashboard_summary())
+
     except Exception as e:
         logger.exception("Dashboard failed")
-        return error("Dashboard error", e)
+        return error("Dashboard error", str(e))
 
 
-# ---------------------------
+# =========================================================
 # FORECAST
-# ---------------------------
+# =========================================================
 @router.get("/forecast")
 def forecast():
     try:
         return success(forecast_sales())
+
     except Exception as e:
         logger.exception("Forecast failed")
-        return error("Forecast error", e)
+        return error("Forecast error", str(e))
 
 
-# ---------------------------
+# =========================================================
 # RESTOCK
-# ---------------------------
+# =========================================================
 @router.get("/restock")
 def restock():
     try:
         return success({
             "products": restock_prediction()
         })
+
     except Exception as e:
         logger.exception("Restock failed")
-        return error("Restock prediction error", e)
+        return error("Restock prediction error", str(e))
 
 
-# ---------------------------
-# DEMAND
-# ---------------------------
+# =========================================================
+# DEMAND (ML CORE ENDPOINT)
+# =========================================================
 @router.get("/demand")
 def demand():
     try:
+        predictions = predict_demand()
+
         return success({
-            "predictions": predict_demand()
+            "count": len(predictions),
+            "predictions": predictions
         })
+
     except Exception as e:
         logger.exception("Demand failed")
-        return error("Demand prediction error", e)
+        return error("Demand prediction error", str(e))
 
 
-# ---------------------------
-# RECOMMENDATION
-# ---------------------------
+# =========================================================
+# RECOMMENDATION ENGINE
+# =========================================================
 @router.get("/recommendations")
 def recommendations():
     try:
         return success(recommendation_engine())
+
     except Exception as e:
         logger.exception("Recommendation failed")
-        return error("Recommendation engine error", e)
+        return error("Recommendation engine error", str(e))
 
 
-# ---------------------------
-# INSIGHTS
-# ---------------------------
+# =========================================================
+# BUSINESS INSIGHTS
+# =========================================================
 @router.get("/insights")
 def insights():
     try:
         return success(generate_business_insights())
+
     except Exception as e:
         logger.exception("Insights failed")
-        return error("Insights generation error", e)
+        return error("Insights generation error", str(e))
 
 
-# ---------------------------
-# RISK
-# ---------------------------
+# =========================================================
+# LOW STOCK RISK
+# =========================================================
 @router.get("/risk")
 def risk():
     try:
         return success(low_stock_risk())
+
     except Exception as e:
         logger.exception("Risk failed")
-        return error("Risk analysis error", e)
+        return error("Risk analysis error", str(e))
 
 
-# ---------------------------
-# BASKET
-# ---------------------------
+# =========================================================
+# MARKET BASKET ANALYSIS
+# =========================================================
 @router.get("/basket")
 def basket():
     try:
         return success(market_basket_analysis())
+
     except Exception as e:
         logger.exception("Basket failed")
-        return error("Basket analysis error", e)
+        return error("Basket analysis error", str(e))
 
 
-# ---------------------------
-# PROMOTION (YOUR MAIN SYSTEM)
-# ---------------------------
+# =========================================================
+# PROMOTION ENGINE (MAIN FEATURE)
+# =========================================================
 @router.get("/promotion")
 def promotion():
     try:
         return success(promotion_recommendation())
+
     except Exception as e:
         logger.exception("Promotion failed")
-        return error("Promotion engine crashed", e)
+        return error("Promotion engine crashed", str(e))

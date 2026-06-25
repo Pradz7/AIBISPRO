@@ -1,19 +1,13 @@
-import warnings
-import logging
-
-# suppress ML/NumPy deprecation spam
-warnings.filterwarnings("ignore", category=DeprecationWarning)
-warnings.filterwarnings("ignore", category=FutureWarning)
-
-# also suppress joblib logging noise
-logging.getLogger("joblib").setLevel(logging.ERROR)
-
 from fastapi import FastAPI
-from routes.ai import router
+from routes.ai import router as ai_router
+from services.model_loader import load_assets
 
-app = FastAPI(
-    title="AIBISPRO AI",
-    version="1.0",
-)
+app = FastAPI()
 
-app.include_router(router)
+# preload ML model at startup (VERY IMPORTANT)
+@app.on_event("startup")
+def startup_event():
+    load_assets()
+    print("ML Model loaded into memory")
+
+app.include_router(ai_router)

@@ -1,52 +1,53 @@
 import joblib
 import os
 
-# =========================================================
-# MODEL PATHS
-# =========================================================
-MODEL_DIR = "models"
-
-MODEL_PATH = os.path.join(MODEL_DIR, "demand_model.pkl")
-PRODUCT_ENCODER_PATH = os.path.join(MODEL_DIR, "product_encoder.pkl")
-SIZE_ENCODER_PATH = os.path.join(MODEL_DIR, "size_encoder.pkl")
-META_PATH = os.path.join(MODEL_DIR, "model_meta.pkl")
+# =====================================================
+# GLOBAL CACHE (PREVENT RELOADING)
+# =====================================================
+MODEL_CACHE = {}
 
 
-# =========================================================
-# LOAD ALL MODELS (MAIN FUNCTION USED BY app.py)
-# =========================================================
+# =====================================================
+# LOAD ALL MODELS
+# =====================================================
 def load_assets():
-    """
-    Load trained ML model + encoders.
-    This is used by FastAPI app on startup or runtime.
-    """
 
-    model = joblib.load(MODEL_PATH)
-    product_encoder = joblib.load(PRODUCT_ENCODER_PATH)
-    size_encoder = joblib.load(SIZE_ENCODER_PATH)
+    global MODEL_CACHE
 
-    metadata = None
-    if os.path.exists(META_PATH):
-        metadata = joblib.load(META_PATH)
+    if MODEL_CACHE.get("loaded"):
+        return MODEL_CACHE
 
-    return {
-        "model": model,
-        "product_encoder": product_encoder,
-        "size_encoder": size_encoder,
-        "metadata": metadata
-    }
+    base_path = "models"
 
+    try:
+        model = joblib.load(os.path.join(base_path, "demand_model.pkl"))
+        product_encoder = joblib.load(os.path.join(base_path, "product_encoder.pkl"))
+        size_encoder = joblib.load(os.path.join(base_path, "size_encoder.pkl"))
 
-# =========================================================
-# OPTIONAL: LOAD INDIVIDUALLY (if needed elsewhere)
-# =========================================================
-def load_model():
-    return joblib.load(MODEL_PATH)
+        MODEL_CACHE["model"] = model
+        MODEL_CACHE["product_encoder"] = product_encoder
+        MODEL_CACHE["size_encoder"] = size_encoder
+        MODEL_CACHE["loaded"] = True
 
+        print("Models loaded successfully")
 
-def load_product_encoder():
-    return joblib.load(PRODUCT_ENCODER_PATH)
+        return MODEL_CACHE
+
+    except Exception as e:
+        print("Model loading failed:", str(e))
+        raise e
 
 
-def load_size_encoder():
-    return joblib.load(SIZE_ENCODER_PATH)
+# =====================================================
+# GETTERS (SAFE ACCESS)
+# =====================================================
+def get_model():
+    return MODEL_CACHE.get("model")
+
+
+def get_product_encoder():
+    return MODEL_CACHE.get("product_encoder")
+
+
+def get_size_encoder():
+    return MODEL_CACHE.get("size_encoder")

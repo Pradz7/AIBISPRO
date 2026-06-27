@@ -12,10 +12,12 @@ from sklearn.exceptions import InconsistentVersionWarning
 from database import engine
 from services.cache import get_cache, set_cache
 
+
 # =========================================================
 # WARNING FILTER (DEV ONLY)
 # =========================================================
 warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
+
 
 # =========================================================
 # MEMORY CACHE
@@ -108,7 +110,7 @@ def train_model():
 
 
 # =========================================================
-# LOAD MODEL (SAFE + LAZY)
+# LOAD MODEL (LAZY + CACHE)
 # =========================================================
 def load_model_assets():
 
@@ -121,9 +123,8 @@ def load_model_assets():
             MODEL_CACHE["size_encoder"],
         )
 
-    # safety check
     if not os.path.exists(MODEL_PATH):
-        raise Exception("Model not found. Run train_model() first.")
+        raise Exception("Model not found. Please run train_model() first.")
 
     model = joblib.load(MODEL_PATH)
     product_encoder = joblib.load(PRODUCT_ENCODER_PATH)
@@ -137,7 +138,7 @@ def load_model_assets():
 
 
 # =========================================================
-# PREDICT DEMAND (CACHE + SAFE)
+# PREDICT DEMAND (CACHE + OPTIMIZED)
 # =========================================================
 def predict_demand():
 
@@ -173,16 +174,19 @@ def predict_demand():
     valid_products = set(product_encoder.classes_)
     valid_sizes = set(size_encoder.classes_)
 
-    for _, row in products.iterrows():
+    for row in products.itertuples(index=False):
 
-        product = row["name"]
-        size = row["size_name"]
+        product = row.name
+        size = row.size_name
 
         if product not in valid_products or size not in valid_sizes:
             continue
 
-        product_id = product_encoder.transform([product])[0]
-        size_id = size_encoder.transform([size])[0]
+        try:
+            product_id = product_encoder.transform([product])[0]
+            size_id = size_encoder.transform([size])[0]
+        except:
+            continue
 
         X = pd.DataFrame([{
             "day": day,
@@ -200,7 +204,10 @@ def predict_demand():
             "predicted_quantity": round(max(float(quantity), 0), 2),
         })
 
-    predictions.sort(key=lambda x: x["predicted_quantity"], reverse=True)
+    predictions.sort(
+        key=lambda x: x["predicted_quantity"],
+        reverse=True
+    )
 
     set_cache(cache_key, predictions)
 
